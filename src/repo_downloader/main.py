@@ -8,6 +8,7 @@ from git.exc import InvalidGitRepositoryError
 import click
 import sys
 
+
 def get_default_downloads_dir():
     system = platform.system()
     if system == "Windows":
@@ -20,6 +21,7 @@ def get_default_downloads_dir():
     if not os.path.exists(downloads_dir):
         return tempfile.gettempdir()  # Use system's temp directory if Downloads doesn't exist
     return downloads_dir
+
 
 def get_files_to_download(repo_path, ignore_gitignore):
     repo = Repo(repo_path)
@@ -40,6 +42,7 @@ def get_files_to_download(repo_path, ignore_gitignore):
         ignored = set(repo.ignored(all_files))
         return [f for f in all_files if f not in ignored]
 
+
 def download_files(repo_path, output_zip, ignore_gitignore):
     files_to_download = get_files_to_download(repo_path, ignore_gitignore)
     
@@ -55,10 +58,12 @@ def download_files(repo_path, output_zip, ignore_gitignore):
                     file_path = os.path.join(root, file)
                     zipf.write(file_path, os.path.basename(file_path))
 
+
 def get_default_output_name(path):
     dir_name = os.path.basename(os.path.abspath(path))
     downloads_dir = get_default_downloads_dir()
     return os.path.join(downloads_dir, f"{dir_name}_files.zip")
+
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True), default='.')
