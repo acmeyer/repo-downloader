@@ -21,6 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install .[dev]  # Installs package and its dependencies, including dev dependencies
           pip install pytest build twine bumpversion
 
       - name: Run tests
@@ -30,9 +31,9 @@ jobs:
         id: check_version
         run: |
           if [[ $(git diff --name-only HEAD^ HEAD) =~ src/ || $(git diff --name-only HEAD^ HEAD) =~ tests/ ]]; then
-            echo "::set-output name=update_version::true"
+            echo "update_version=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=update_version::false"
+            echo "update_version=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Update version
