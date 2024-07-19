@@ -39,14 +39,17 @@ jobs:
         if: steps.check_changes.outputs.relevant_changes == 'true'
         run: pytest
 
+      - name: Configure Git
+        if: steps.check_changes.outputs.relevant_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
       - name: Update version
         if: steps.check_changes.outputs.relevant_changes == 'true'
         run: |
           bumpversion patch
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -am "Bump version"
-          git push
+          git push --follow-tags
 
       - name: Build package
         if: steps.check_changes.outputs.relevant_changes == 'true'
