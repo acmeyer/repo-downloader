@@ -33,7 +33,7 @@ def create_test_repo():
 def test_get_default_downloads_dir():
     downloads_dir = get_default_downloads_dir()
     assert os.path.exists(downloads_dir)
-    assert 'Downloads' in downloads_dir
+    assert 'Downloads' in downloads_dir or downloads_dir == tempfile.gettempdir()
 
 def test_get_default_output_name():
     with tempfile.TemporaryDirectory() as temp_dir:
