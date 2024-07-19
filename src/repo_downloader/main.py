@@ -11,11 +11,15 @@ import sys
 def get_default_downloads_dir():
     system = platform.system()
     if system == "Windows":
-        return os.path.join(os.path.expanduser("~"), "Downloads")
+        downloads_dir = os.path.join(os.path.expanduser("~"), "Downloads")
     elif system == "Darwin":  # macOS
-        return os.path.expanduser("~/Downloads")
+        downloads_dir = os.path.expanduser("~/Downloads")
     else:  # Linux and other Unix-like systems
-        return os.path.expanduser("~/Downloads")  # Most Linux distros use this by default
+        downloads_dir = os.path.expanduser("~/Downloads")
+    
+    if not os.path.exists(downloads_dir):
+        return tempfile.gettempdir()  # Use system's temp directory if Downloads doesn't exist, for tests
+    return downloads_dir
 
 def get_files_to_download(repo_path, ignore_gitignore):
     repo = Repo(repo_path)
