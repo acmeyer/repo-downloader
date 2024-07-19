@@ -1,0 +1,54 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # This is important for the versioning step
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest build twine bumpversion
+
+      - name: Run tests
+        run: pytest
+
+      - name: Check for version update
+        id: check_version
+        run: |
+          if [[ $(git diff --name-only HEAD^ HEAD) =~ src/ || $(git diff --name-only HEAD^ HEAD) =~ tests/ ]]; then
+            echo "::set-output name=update_version::true"
+          else
+            echo "::set-output name=update_version::false"
+          fi
+
+      - name: Update version
+        if: steps.check_version.outputs.update_version == 'true'
+        run: |
+          bumpversion patch
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -am "Bump version"
+          git push
+
+      - name: Build package
+        run: python -m build
+
+      - name: Deploy to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
