@@ -18,7 +18,7 @@ def get_default_downloads_dir():
         downloads_dir = os.path.expanduser("~/Downloads")
     
     if not os.path.exists(downloads_dir):
-        return tempfile.gettempdir()  # Use system's temp directory if Downloads doesn't exist, for tests
+        return tempfile.gettempdir()  # Use system's temp directory if Downloads doesn't exist
     return downloads_dir
 
 def get_files_to_download(repo_path, ignore_gitignore):
@@ -63,15 +63,18 @@ def get_default_output_name(path):
 @click.command()
 @click.argument('path', type=click.Path(exists=True), default='.')
 @click.option('--ignore-gitignore', is_flag=True, help='Ignore .gitignore file')
-@click.option('--output', help='Output zip file path (default: <OS-specific Downloads folder>/<directory_name>_files.zip)')
+@click.option('--output', help='Output zip file path (default: ~/Downloads/<directory_name>_files.zip)')
 def main(path, ignore_gitignore, output):
     """Download files from a Git repository into a zipped directory."""
     repo_path = os.path.abspath(path)
     
     if output is None:
         output = get_default_output_name(repo_path)
+    else:
+        # Use the provided output path as is, without appending to default directory
+        output = os.path.abspath(output)
     
-    # Ensure the directory exists
+    # Ensure the directory for the output file exists
     os.makedirs(os.path.dirname(output), exist_ok=True)
     
     try:
@@ -79,10 +82,10 @@ def main(path, ignore_gitignore, output):
         click.echo(f"Files downloaded and zipped successfully to {output}")
     except InvalidGitRepositoryError:
         click.echo(f"Error: {repo_path} is not a valid Git repository.", err=True)
-        sys.exit(1)  # Exit with status code 1 for invalid repository
+        sys.exit(1)
     except Exception as e:
         click.echo(f"An error occurred: {str(e)}", err=True)
-        sys.exit(1)  # Exit with status code 1 for other errors
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
